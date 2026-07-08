@@ -115,7 +115,7 @@ npm start
 
 ## 🚀 Deploy
 
-Aplicação publicada: https://seu-link-vercel.vercel.app
+Aplicação publicada: https://teste-next-js-ebac.vercel.app/
 
 ## ⚙️ CI/CD
 
