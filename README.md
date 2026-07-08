@@ -112,3 +112,18 @@ npm start
 
 - Os dados de tarefas ficam em um array local em `lib/tarefas.ts`, retornado via `Promise.resolve` para simular uma chamada assíncrona (ex.: uma API), evitando dependências externas que poderiam expirar ou instabilizar o deploy (ex.: na Vercel).
 - Os testes do Server Component não usam mock de API externa, pois os dados já são simulados localmente — testamos a integração real entre `page.tsx`, `lib/tarefas.ts` e os componentes filhos.
+
+## 🚀 Deploy
+
+Aplicação publicada: https://seu-link-vercel.vercel.app
+
+## ⚙️ CI/CD
+
+Este projeto conta com uma pipeline de integração e entrega contínua via GitHub Actions.
+
+Para verificar a execução:
+1. Acesse a aba **Actions** no repositório do GitHub.
+2. Clique na execução mais recente do workflow **CI/CD Pipeline**.
+3. Veja o status de cada etapa (lint, testes, build e deploy) e os logs de cada job (`build-and-test` e `deploy`).
+
+O deploy automático ocorre a cada push na branch `main`, após o job de build e testes ser concluído com sucesso.
