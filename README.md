@@ -127,3 +127,122 @@ Para verificar a execução:
 3. Veja o status de cada etapa (lint, testes, build e deploy) e os logs de cada job (`build-and-test` e `deploy`).
 
 O deploy automático ocorre a cada push na branch `main`, após o job de build e testes ser concluído com sucesso.
+
+
+# next-tarefas-app — Otimização de Performance
+
+Aplicativo de lista de tarefas construído em **Next.js 15 (App Router)** com **TypeScript**, testado com **Jest + Testing Library**, e com pipeline de **CI/CD via GitHub Actions** para deploy automático no **Vercel**.
+
+> Repositório: [`EukirneRas/Teste-Next.js-EBAC`](https://github.com/EukirneRas/Teste-Next.js-EBAC)
+
+---
+
+## 📋 Descrição do projeto
+
+O `next-tarefas-app` é uma aplicação de gerenciamento de tarefas (task list) que utiliza:
+- Server Components e Client Components do App Router
+- Um hook customizado (`useContadorDeTarefas`)
+- Suíte de testes com 12 casos cobrindo componentes e hook
+- Pipeline de CI/CD que roda build, testes e deploy automatizado a cada push
+
+---
+
+## 🔧 Configuração de lint corrigida
+
+Antes de iniciar a análise de performance, foi necessário corrigir a configuração do ESLint, que estava gerando **4004 problemas** (138 erros, 3866 warnings) — quase todos causados por arquivos que **não deveriam ser analisados**.
+
+### Causa raiz
+O arquivo `eslint.config.mjs` não excluía a pasta de build (`.next/`), fazendo o linter analisar código minificado/gerado automaticamente pelo Next.js, além de conter dois `export default` conflitantes (erro de sintaxe `Identifier '.default' has already been declared`).
+
+### Correções aplicadas
+
+**1. Consolidação do `eslint.config.mjs`**, unificando em um único `export default` e adicionando bloco de exclusões:
+
+```js
+import { FlatCompat } from '@eslint/eslintrc';
+
+const compat = new FlatCompat({
+  baseDirectory: import.meta.dirname,
+});
+
+const eslintConfig = [
+  {
+    ignores: [
+      ".next/**",
+      "node_modules/**",
+      "coverage/**",
+      "next-env.d.ts",
+      "jest.config.cjs",
+    ],
+  },
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+];
+
+export default eslintConfig;
+```
+
+**2. Renomeação de `jest.config.js` → `jest.config.cjs`**, deixando explícito que o arquivo usa CommonJS, e adicionado à lista de `ignores` (por ser um arquivo de configuração, não código de produção).
+
+### Resultado
+
+| Antes | Depois |
+|---|---|
+| 4004 problemas (138 erros, 3866 warnings) | 0 problemas |
+
+Essa limpeza foi um pré-requisito importante para a etapa seguinte: sem ela, ferramentas de análise e o próprio processo de build ficavam poluídos com ruído de arquivos gerados, dificultando identificar problemas reais no código-fonte (`app/`, `components/`, `hooks/`).
+
+---
+
+## 🚦 Análise de Performance (Lighthouse / DevTools)
+
+> ⏳ **Seção em andamento** — preencher após rodar o build de produção e o relatório Lighthouse.
+
+### Como gerar o relatório
+```powershell
+npm run build
+npm run start
+```
+Em seguida, abrir o Chrome DevTools → aba **Lighthouse** → modo **Navigation** → dispositivo **Mobile** → gerar relatório.
+
+### Relatório inicial (antes das otimizações)
+- [ ] Print da pontuação (Performance / Accessibility / Best Practices / SEO)
+- [ ] Gargalos identificados:
+  - [ ] Imagens não otimizadas
+  - [ ] JavaScript bloqueando renderização
+  - [ ] Requisições desnecessárias
+  - [ ] Outros: _______
+
+### Otimizações aplicadas
+
+| Técnica | Status | Observações |
+|---|---|---|
+| Imagens em `.webp`/`.avif` + `next/image` | ⏳ Pendente | |
+| `loading="lazy"` em imagens abaixo da dobra | ⏳ Pendente | |
+| Minificação HTML/CSS/JS | ✅ Automático via `next build` | Confirmado em produção (`next start`) |
+| Remoção de código não utilizado | ✅ Concluído | Configuração de lint corrigida (ver seção acima); 0 erros/warnings no código-fonte |
+| Imports enxutos de bibliotecas | ⏳ Pendente | |
+
+### Relatório final (depois das otimizações)
+- [ ] Print da pontuação atualizada
+- [ ] Comparativo antes/depois
+
+### Resumo de impacto
+_A preencher com as métricas reais após a reanálise — destacar quais mudanças trouxeram maior ganho (ex.: otimização de imagens costuma ter o maior impacto em LCP)._
+
+---
+
+## 🧪 Testes
+
+Suíte completa com Jest + Testing Library, cobrindo Server Component, Client Components e o hook `useContadorDeTarefas` (12 testes, 100% passando).
+
+```powershell
+npm run test
+```
+
+## 🚀 CI/CD
+
+Pipeline via GitHub Actions:
+- **build-and-test**: instala dependências, roda lint, testes e build a cada push
+- **deploy**: publica automaticamente no Vercel após o job anterior passar
+
+🔗 Deploy: _adicionar link do projeto no Vercel aqui_
